@@ -70,7 +70,11 @@ def main():
     check("cache disabled when max-width=0", disabled.get(tmp / "landscape.jpg") is None)
 
     # -- Server routes ----------------------------------------------------
-    client_config = {"interval": 5.0, "transition": 1.0, "kenburns": True}
+    # parse_args exposes the random/sequential toggle.
+    check("random advance is the default", frame.parse_args(["x"]).sequential is False)
+    check("--sequential opts out of random", frame.parse_args(["x", "--sequential"]).sequential is True)
+
+    client_config = {"interval": 5.0, "transition": 1.0, "kenburns": True, "random": True}
     handler = frame.build_handler(lib, cache, client_config)
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
@@ -82,6 +86,7 @@ def main():
     cfg = json.loads(body)
     check("GET /api/config -> 200", status == 200)
     check("config reports interval + count", cfg["interval"] == 5.0 and cfg["count"] == 3)
+    check("config exposes random flag", cfg["random"] is True)
 
     status, _, body = get(f"{base}/api/images")
     check("GET /api/images -> 200 with count", status == 200 and json.loads(body)["count"] == 3)

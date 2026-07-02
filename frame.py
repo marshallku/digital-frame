@@ -325,7 +325,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--transition", type=float, default=1.5, help="Crossfade duration in seconds (default: 1.5).")
     parser.add_argument("--port", type=int, default=8080, help="Port to listen on (default: 8080).")
     parser.add_argument("--host", default="0.0.0.0", help="Interface to bind (default: 0.0.0.0).")
-    parser.add_argument("--shuffle", action="store_true", help="Randomize image order.")
+    parser.add_argument("--shuffle", action="store_true", help="Randomize the initial scan order.")
+    parser.add_argument(
+        "--sequential",
+        action="store_true",
+        help="Advance in order instead of picking the next image at random (random is the default).",
+    )
     parser.add_argument("--recursive", "-r", action="store_true", help="Scan subdirectories too.")
     parser.add_argument("--no-kenburns", action="store_true", help="Disable the slow zoom/pan animation.")
     parser.add_argument(
@@ -352,6 +357,7 @@ def main(argv: list[str] | None = None) -> int:
         "interval": args.interval,
         "transition": args.transition,
         "kenburns": not args.no_kenburns,
+        "random": not args.sequential,
     }
     handler = build_handler(library, cache, client_config)
 

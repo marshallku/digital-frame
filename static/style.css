@@ -146,6 +146,12 @@ body.idle .hint,
     opacity: 0;
 }
 
+/* The keyboard hint bar is redundant once you are in fullscreen kiosk mode. */
+body.fullscreen .hint {
+    opacity: 0;
+    visibility: hidden;
+}
+
 .message {
     position: fixed;
     inset: 0;
