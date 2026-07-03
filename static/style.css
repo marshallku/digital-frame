@@ -64,7 +64,9 @@ body.idle {
     image-orientation: from-image;
 }
 
-.layer.active.kenburns .photo {
+/* Not gated on `.active`: the outgoing layer must keep its zoomed transform while it
+   fades out, otherwise dropping `.active` would snap it back to scale(1) mid-crossfade. */
+.layer.kenburns .photo {
     animation: kenburns var(--kenburns-duration) ease-out forwards;
 }
 
