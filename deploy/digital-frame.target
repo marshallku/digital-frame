@@ -1,0 +1,4 @@
+[Unit]
+Description=Digital Frame session
+Wants=digital-frame.service frame-kiosk.service frame-monitor-watch.service
+After=graphical-session.target

@@ -1,0 +1,18 @@
+[Unit]
+Description=Digital Frame photo server
+After=graphical-session.target
+PartOf=digital-frame.target
+
+[Service]
+Environment=FRAME_REPO=%h/dev/digital-frame
+Environment=FRAME_DIR=%h/Pictures
+Environment=FRAME_PORT=8080
+Environment="FRAME_ARGS=--interval 8 -r"
+EnvironmentFile=-%h/.config/digital-frame/frame.env
+# $FRAME_ARGS (no braces) is intentionally word-split into separate arguments.
+ExecStart=/usr/bin/python3 ${FRAME_REPO}/frame.py ${FRAME_DIR} --port ${FRAME_PORT} $FRAME_ARGS
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=digital-frame.target

@@ -1,0 +1,20 @@
+[Unit]
+Description=Digital Frame kiosk browser
+Requires=digital-frame.service
+After=digital-frame.service
+PartOf=digital-frame.target
+
+[Service]
+Environment=FRAME_REPO=%h/dev/digital-frame
+Environment=FRAME_URL=http://localhost:8080
+Environment=FRAME_CLASS=digital-frame
+EnvironmentFile=-%h/.config/digital-frame/frame.env
+ExecStart=/usr/bin/bash ${FRAME_REPO}/deploy/frame-kiosk.sh
+Restart=always
+RestartSec=2
+# Give the service its own delegated cgroup so `systemctl --user freeze` /
+# `thaw` freezes the browser and all of its child processes as one unit.
+Delegate=yes
+
+[Install]
+WantedBy=digital-frame.target

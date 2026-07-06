@@ -67,6 +67,58 @@ python3 frame.py ~/Pictures -r --interval 5
   bounded trail so the back arrow can revisit; it preloads each image and skips unreadable files.
 - Entering fullscreen hides the keyboard-hint bar for a clean kiosk display.
 
+## Kiosk on Arch Linux + Hyprland
+
+`deploy/` turns a Hyprland machine into a dedicated frame: the server, a
+fullscreen kiosk browser, and a monitor-power watcher, all as systemd `--user`
+units. Turning the monitor off freezes the browser (CPU/GPU go idle); turning it
+back on thaws it and the slideshow resumes where it paused — driven natively by
+Hyprland's `monitoradded` / `monitorremoved` hotplug events.
+
+```bash
+deploy/install.sh                      # symlink + enable the user units
+$EDITOR ~/.config/digital-frame/frame.env   # set FRAME_DIR and FRAME_MONITOR
+# add to ~/.config/hypr/hyprland.conf:
+#   source = /path/to/digital-frame/deploy/hyprland-frame.conf
+```
+
+Then reload Hyprland (or `systemctl --user start digital-frame.target`).
+
+**Find your monitor name** with `hyprctl monitors` and put it in `FRAME_MONITOR`.
+
+**Verify power-off is detected** (HDMI is less reliable than DisplayPort — some
+panels keep the link alive when off). Watch the events while you toggle the
+monitor:
+
+```bash
+python3 - <<'PY'
+import os, socket
+sig = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]
+path = f"{os.environ['XDG_RUNTIME_DIR']}/hypr/{sig}/.socket2.sock"
+s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+s.connect(path)
+print("watching — toggle the monitor, Ctrl-C to stop")
+while (data := s.recv(4096)):
+    for line in data.decode(errors="replace").splitlines():
+        if "monitor" in line:
+            print(line)
+PY
+```
+
+If `monitorremoved>>…` / `monitoradded>>…` appear when you power the monitor off
+and on, the freeze/thaw flow works. If nothing appears, the monitor never
+disconnects — full system suspend won't wake on monitor power either, so a frame
+that idles the display (the default here) is the right call.
+
+Notes:
+
+- `systemctl --user freeze` uses the cgroup freezer, so the browser and every
+  child process stop together and resume instantly on `thaw`.
+- The kiosk window keeps the screen awake via a Hyprland `idleinhibit` rule, so
+  `hypridle` won't blank the frame mid-view.
+- Full-PC suspend on monitor-off is intentionally not used: HDMI/DP hotplug is
+  not a wake source, so the PC could not reliably wake on monitor power-on.
+
 ## Tests
 
 ```bash

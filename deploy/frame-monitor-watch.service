@@ -1,0 +1,16 @@
+[Unit]
+Description=Digital Frame monitor hotplug watcher
+After=digital-frame.target
+PartOf=digital-frame.target
+
+[Service]
+Environment=FRAME_REPO=%h/dev/digital-frame
+Environment=FRAME_MONITOR=HDMI-A-1
+Environment=FRAME_KIOSK_UNIT=frame-kiosk.service
+EnvironmentFile=-%h/.config/digital-frame/frame.env
+ExecStart=/usr/bin/python3 ${FRAME_REPO}/deploy/frame-monitor-watch.py
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=digital-frame.target
